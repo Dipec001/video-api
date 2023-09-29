@@ -143,3 +143,10 @@ AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
 
 AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME')
 AWS_S3_REGION_NAME = os.getenv('AWS_S3_REGION_NAME')
+
+
+# Define the base directory of your project
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# Set STATIC_ROOT to a directory where you want to collect static files
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
