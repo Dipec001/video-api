@@ -1,0 +1,19 @@
+# .env file
+.env
+# Dependency cache
+__pycache__/
+# Compiled Python files
+*.pyc
+*.pyo
+# Media files
+/media/
+# IDE/editor files
+/.vscode/
+/.idea/
+/.pyc
+/.pyo
+# Database files
+/db.sqlite3
+# Virtual environment
+/venv/
+/env/
