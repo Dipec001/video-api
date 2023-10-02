@@ -6,7 +6,7 @@
 2. [Prerequisites](#prerequisites)
 3. [Getting Started](#getting-started)
    - [List Videos](#list-videos)
-   - [Upload a Video](#upload-a-video)
+   - [Upload Video Chunks](#upload-video-chunks)
    - [Video Playback](#video-playback)
    - [Get Transcription](#get-transcription)
 4. [Sample API Usage](#sample-api-usage)
@@ -47,17 +47,18 @@ To get started with the Video Upload API, follow these steps:
 
 **Response**: JSON array of video objects with their details, including title and file path.
 
-### Upload a Video
+### Upload Video Chunks
 
-**Endpoint**: `/api/upload/`
+**Endpoint**: `/api/upload-chunk/`
 
 **HTTP Method**: POST
 
-**Description**: Upload a video to the system. The video will be stored on AWS S3, and a database record will be created for it.
+**Description**: Upload video chunks to the system for later assembly into a complete video. Chunks are associated with a video by providing a video ID. The last chunk will trigger video concatenation, S3 upload, transcription, and cleanup.
 
-**Request**: A `multipart/form-data` POST request with the video file.
+**Request**: A `multipart/form-data` POST request with the video chunk file, video ID, and an indicator for the last chunk.
 
-**Response**: JSON object with a success message upon successful upload.
+**Response**: JSON object with a success message upon successful chunk upload or video upload.
+
 
 ### Video Playback
 
@@ -89,3 +90,20 @@ Retrieve a list of all videos available in the system:
 
 ```http
 GET /api/videos/
+
+Sample Response:
+```
+[
+  {
+    "id": 1,
+    "title": "Sample Video 1",
+    "file_path": "media/sample_video_1.mp4"
+  },
+  {
+    "id": 2,
+    "title": "Sample Video 2",
+    "file_path": "media/sample_video_2.mp4"
+  }
+]
+
+```
