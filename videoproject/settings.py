@@ -48,7 +48,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'myapp'
+    'myapp',
+    'django_celery_results',
 ]
 
 MIDDLEWARE = [
@@ -150,3 +151,45 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Set STATIC_ROOT to a directory where you want to collect static files
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# settings.py
+
+# Celery Configuration
+# CELERY_BROKER_URL = 'pyamqp://localhost'  # Use RabbitMQ as the broker
+# CELERY_RESULT_BACKEND = 'db+sqlite:///results.sqlite'
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'level': 'INFO',  # Set the log level to INFO or lower
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',  # Set the log level to INFO or lower
+    },
+}
+
+# settings.py
+
+# Use Redis as a caching backend.
+# CACHES = {
+#     "default": {
+#         "BACKEND": "django.core.cache.backends.redis.RedisCache",
+#         "LOCATION": "127.0.0.1:6379/1",  # Use the address of your Redis server.
+#         "OPTIONS": {
+#             "CLIENT_CLASS": "django_redis.client.DefaultClient",
+#         }
+#     }
+# }
+
+# # Use Redis as a message broker for Celery (if you're using Celery).
+# CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"  # Use the address of your Redis server.
+# settings.py
+
+CELERY_BROKER_URL = 'redis://localhost:6379/0'  # Replace with your Redis server URL
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'  # Same Redis URL for results
