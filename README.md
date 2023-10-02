@@ -49,11 +49,11 @@ To get started with the Video Upload API, follow these steps:
 
 ### Upload Video Chunks
 
-**Endpoint**: `/api/upload-chunk/`
+**Endpoint**: `/api/upload-video/`
 
 **HTTP Method**: POST
 
-**Description**: Upload video chunks to the system for later assembly into a complete video. Chunks are associated with a video by providing a video ID. The last chunk will trigger video concatenation, S3 upload, transcription, and cleanup.
+**Description**: Video received in chunks into the system for later assembly into a complete video. Chunks are associated with a video by providing a video ID. The last chunk will trigger video concatenation, S3 upload, transcription, and cleanup.
 
 **Request**: A `multipart/form-data` POST request with the video chunk file, video ID, and an indicator for the last chunk.
 
@@ -90,6 +90,7 @@ Retrieve a list of all videos available in the system:
 
 ```http
 GET /api/videos/
+```
 
 Sample Response:
 ```
@@ -107,3 +108,36 @@ Sample Response:
 ]
 
 ```
+Upload Video Chunks
+
+Upload video chunks to the system:
+
+```http
+POST /api/upload-chunk/
+```
+Sample Request (Using curl):
+```
+curl -X POST -F "chunk=@/path/to/chunk.mp4" -F "video_id=1" -F "is_last_chunk=true" http://your-api-url/api/upload-chunk/
+```
+Sample Response:
+```
+{
+  "message": "Video uploaded and transcription started."
+}
+```
+
+Video Playback
+
+Retrieve a pre-signed URL for secure video playback:
+```http
+GET /api/playback/{video_id}/
+```
+Sammple Response:
+```
+Redirect to pre-signed URL for video playback.
+```
+
+Known Limitations
+
+This API does not include authentication or authorization mechanisms. It assumes open access.
+Error handling for invalid requests is minimal in this sample.
