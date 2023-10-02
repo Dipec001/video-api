@@ -6,7 +6,7 @@
 2. [Prerequisites](#prerequisites)
 3. [Getting Started](#getting-started)
    - [List Videos](#list-videos)
-   - [Upload Video Chunks](#upload-video-chunks)
+   - [Upload Video](#upload-video)
    - [Video Playback](#video-playback)
    - [Get Transcription](#get-transcription)
 4. [Sample API Usage](#sample-api-usage)
@@ -108,12 +108,12 @@ Sample Response:
 ]
 
 ```
-Upload Video Chunks
+Upload Video
 
 Upload video chunks to the system:
 
 ```http
-POST /api/upload-chunk/
+POST /api/upload-video/
 ```
 Sample Request (Using curl):
 ```
