@@ -47,7 +47,7 @@ To get started with the Video Upload API, follow these steps:
 
 **Response**: JSON array of video objects with their details, including title and file path.
 
-### Upload Video Chunks
+### Upload Video
 
 **Endpoint**: `/api/upload-video/`
 
