@@ -56,7 +56,7 @@ class ListVideosView(generics.ListAPIView):
 
 #             # Call the transcription function with the S3 URI of the uploaded video
 #             input_uri = f's3://{bucket_name}/{s3_object_key}'
-#             start_transcription(input_uri)
+#             start_transcription.delay(input_uri)
 
 #             return Response({'message': 'Video uploaded successfully.'}, status=status.HTTP_201_CREATED)
 #         except NoCredentialsError:
@@ -153,7 +153,7 @@ def upload_video(request):
 
             if is_last_chunk == 'true':
                 # Concatenate all chunks to create the complete video
-                complete_video_path = os.path.join(settings.MEDIA_ROOT, 'complete_videos', f'{uuid.uuid4()}.webm')
+                complete_video_path = os.path.join(settings.MEDIA_ROOT, 'complete_videos', f'{uuid.uuid4()}.mp4')
 
                 # Concatenate chunks into the complete video file
                 concatenate_chunks(os.path.join(TEMP_CHUNKS_DIR, video_id), complete_video_path)
@@ -162,7 +162,7 @@ def upload_video(request):
                 upload_complete_video_to_s3(complete_video_path)
 
                 # Trigger transcription for the complete video
-                start_transcription(complete_video_path)
+                start_transcription.delay(complete_video_path)
 
                 # Clean up the temporary directory for this video
                 shutil.rmtree(os.path.join(TEMP_CHUNKS_DIR, video_id))

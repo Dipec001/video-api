@@ -49,8 +49,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    
     'myapp',
     'django_celery_results',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
@@ -92,15 +94,15 @@ WSGI_APPLICATION = 'videoproject.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
 DATABASES = {
-    'default': dj_database_url.config(default=os.environ.get('DATABASE_URL'))
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
 }
+# DATABASES = {
+#     'default': dj_database_url.config(default=os.environ.get('DATABASE_URL'))
+# }
 
 
 # Password validation
@@ -160,12 +162,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Set STATIC_ROOT to a directory where you want to collect static files
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-
-# settings.py
-
-# Celery Configuration
-# CELERY_BROKER_URL = 'pyamqp://localhost'  # Use RabbitMQ as the broker
-# CELERY_RESULT_BACKEND = 'db+sqlite:///results.sqlite'
+STATICFILES_DIRS = []
 
 
 LOGGING = {
@@ -183,22 +180,12 @@ LOGGING = {
     },
 }
 
-# settings.py
 
-# Use Redis as a caching backend.
-# CACHES = {
-#     "default": {
-#         "BACKEND": "django.core.cache.backends.redis.RedisCache",
-#         "LOCATION": "127.0.0.1:6379/1",  # Use the address of your Redis server.
-#         "OPTIONS": {
-#             "CLIENT_CLASS": "django_redis.client.DefaultClient",
-#         }
-#     }
-# }
+#CELERY SETTINGS
 
-# # Use Redis as a message broker for Celery (if you're using Celery).
-# CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"  # Use the address of your Redis server.
-# settings.py
-
-CELERY_BROKER_URL = 'redis://localhost:6379/0'  # Replace with your Redis server URL
-CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'  # Same Redis URL for results
+CELERY_BROKER_URL = 'redis://127.0.0.1:6379'  # Replace with your Redis server URL
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_TIMEZONE ='Africa/Lagos'
+CELERY_RESULT_BACKEND = 'django-db' 
