@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404
-from django.http import HttpResponse, FileResponse
+from django.http import HttpResponse, FileResponse, JsonResponse
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -9,8 +9,7 @@ from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 from django.db import transaction
 import boto3
-from botocore.exceptions import NoCredentialsError
-from botocore.exceptions import WaiterError
+from botocore.exceptions import NoCredentialsError, WaiterError, ClientError
 import time
 from .tasks import start_transcription
 from .serializers import VideoSerializer
@@ -18,6 +17,7 @@ from rest_framework import generics
 from django.http import StreamingHttpResponse
 import uuid
 import shutil
+from django.urls import reverse
 
 # Create your views here.
 class ListVideosView(generics.ListAPIView):
@@ -27,8 +27,7 @@ class ListVideosView(generics.ListAPIView):
     queryset = Video.objects.all()
     serializer_class = VideoSerializer
 
-
-@api_view(['GET'])
+api_view(['GET'])
 def video_playback(request, video_id):
     # Retrieve the video object from the database or return a 404 if it doesn't exist
     video = get_object_or_404(Video, id=video_id)
@@ -52,17 +51,21 @@ def video_playback(request, video_id):
             ExpiresIn=3600  # Set expiration time (e.g., 1 hour)
         )
 
-        # Fetch the video content from the pre-signed URL
-        response = HttpResponse(status=302)
-        response['Location'] = presigned_url
+         # Create a dictionary with video details and URLs
+        video_data = {
+            "upload_id": video.id,
+            # "upload_status": video.status,
+            "created_on": video.upload_timestamp,
+            "filename": video.title,
+            "url": presigned_url,
+            "transcript_url": reverse('get_transcription', args=[video.id]),
+        }
 
-        # Set the Content-Type header to 'video/mp4'
-        response['Content-Type'] = 'video/mp4'
-
-        return response
+        # Return the video details as JSON response
+        return JsonResponse(video_data)
     except Exception as e:
-        return HttpResponse(str(e), status=500)
-    
+        return JsonResponse({"error": str(e)}, status=500)
+
 
 @api_view(['GET'])
 def get_transcription(request, video_id):
@@ -72,13 +75,23 @@ def get_transcription(request, video_id):
     # Get the S3 object key (file path) for the transcription
     transcription_key = f'transcripts/{video.file_path.split("/")[-1]}.json'
 
-    # Generate a pre-signed URL for the transcription file
     try:
         s3 = boto3.client('s3',
             aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
             aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
             region_name=settings.AWS_S3_REGION_NAME
         )
+
+        # Check if the transcription file exists on S3
+        try:
+            head_object = s3.head_object(Bucket=settings.AWS_STORAGE_BUCKET_NAME, Key=transcription_key)
+        except ClientError as e:  # Use ClientError to catch AWS service-related exceptions
+            if e.response['Error']['Code'] == '404':
+                # Transcript not found, return a custom 404 response
+                return Response({'message': 'No transcript available for this video.'}, status=status.HTTP_404_NOT_FOUND)
+            else:
+                # Handle other exceptions
+                return Response({'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         # Generate a pre-signed URL for the S3 object (transcription file)
         presigned_url = s3.generate_presigned_url(
