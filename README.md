@@ -69,7 +69,7 @@ Configure your Django settings to use AWS S3 for media storage. Update the follo
 
 **HTTP Method**: POST
 
-**Description**: Video received in chunks into the system for later assembly into a complete video. Chunks are associated with a video by providing a video ID. The last chunk will trigger video concatenation, S3 upload, transcription, and cleanup.
+**Description**: Video received in chunks into the system for later assembly into a complete video. Chunks are associated with a video by providing a video ID. The last chunk will trigger video concatenation, S3 upload, transcription, and cleanup so the is_last_chunk param should be set to `True`.
 
 **Request**: A `multipart/form-data` POST request with the video chunk file, video ID, and an indicator for the last chunk.
 
