@@ -18,9 +18,11 @@ def start_transcription(self, input_uri):
         if isinstance(input_uri, str):
             # Extract the input video file name from the input_uri
             input_video_name = input_uri.split('/')[-1]
-
+            print(f"INput URI: {input_uri}")
+            print(f"INput video name: {input_video_name}")
             # Use the input video name as the base name for the output key
             output_key = f'transcripts/{input_video_name}.json'
+
 
         # Start transcription job
         response = transcribe.start_transcription_job(

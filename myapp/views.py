@@ -27,45 +27,6 @@ class ListVideosView(generics.ListAPIView):
     queryset = Video.objects.all()
     serializer_class = VideoSerializer
 
-# @api_view(['POST'])
-# @transaction.atomic
-# def upload_video(request):
-#     uploaded_video = request.FILES.get('video')
-
-#     if uploaded_video:
-#         # Initialize AWS S3 client
-#         s3 = boto3.client('s3',
-#             aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-#             aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
-#             region_name=settings.AWS_S3_REGION_NAME
-#         )
-
-#         # Define the S3 bucket name
-#         bucket_name = settings.AWS_STORAGE_BUCKET_NAME
-
-#         try:
-#             # Generate a unique S3 object key (file path)
-#             s3_object_key = f'media/{uploaded_video.name}'
-
-#             # Upload the video to the S3 bucket with the generated key
-#             s3.upload_fileobj(uploaded_video, bucket_name, s3_object_key)
-
-#             # Create a database record for the uploaded video with the S3 object key
-#             video = Video(title='Your Video Title', file_path=s3_object_key)
-#             video.save()
-
-#             # Call the transcription function with the S3 URI of the uploaded video
-#             input_uri = f's3://{bucket_name}/{s3_object_key}'
-#             start_transcription.delay(input_uri)
-
-#             return Response({'message': 'Video uploaded successfully.'}, status=status.HTTP_201_CREATED)
-#         except NoCredentialsError:
-#             return Response({'message': 'AWS credentials are missing or incorrect.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-#     else:
-#         return Response({'message': 'Video upload failed.'}, status=status.HTTP_400_BAD_REQUEST)
-
-
-
 
 @api_view(['GET'])
 def video_playback(request, video_id):
@@ -139,33 +100,54 @@ TEMP_CHUNKS_DIR = os.path.join(settings.MEDIA_ROOT, 'temp_chunks')
 def upload_video(request):
     uploaded_chunk = request.FILES.get('chunk')
     video_id = request.data.get('video_id')  # Include a video ID to associate chunks
-    is_last_chunk = request.data.get('is_last_chunk')
+    is_last_chunk = request.data.get('is_last_chunk', '').lower() == 'true'  # Ensure is_last_chunk is a boolean
 
     if uploaded_chunk and video_id:
         try:
+            # Ensure the directory for this video_id exists
+            video_dir = os.path.join(TEMP_CHUNKS_DIR, video_id)
+            os.makedirs(video_dir, exist_ok=True)
+
             # Determine the file path for this chunk based on the video_id
-            chunk_file_path = os.path.join(TEMP_CHUNKS_DIR, video_id, uploaded_chunk.name)
+            chunk_file_path = os.path.join(video_dir, uploaded_chunk.name)
 
             # Save the received chunk to a temporary location or buffer
             with open(chunk_file_path, 'wb') as destination:
                 for chunk in uploaded_chunk.chunks():
                     destination.write(chunk)
 
-            if is_last_chunk == 'true':
+            if is_last_chunk:
                 # Concatenate all chunks to create the complete video
-                complete_video_path = os.path.join(settings.MEDIA_ROOT, 'complete_videos', f'{uuid.uuid4()}.mp4')
+                complete_video_path = os.path.join(video_dir, 'complete.mp4')
+                concatenate_chunks(video_dir, complete_video_path)
 
-                # Concatenate chunks into the complete video file
-                concatenate_chunks(os.path.join(TEMP_CHUNKS_DIR, video_id), complete_video_path)
+                # Initialize AWS S3 client
+                s3 = boto3.client('s3',
+                    aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+                    aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+                    region_name=settings.AWS_S3_REGION_NAME
+                )
 
-                # Upload the complete video to AWS S3
-                upload_complete_video_to_s3(complete_video_path)
+                # Define the S3 bucket name
+                bucket_name = settings.AWS_STORAGE_BUCKET_NAME
 
-                # Trigger transcription for the complete video
-                start_transcription.delay(complete_video_path)
+                uuid_str = uuid.uuid4().hex
+                # Generate a unique S3 object key (file path)
+                s3_object_key = f'media/{video_id}_{uuid_str}.mp4'
+
+                # Upload the video to the S3 bucket with the generated key
+                s3.upload_file(complete_video_path, bucket_name, s3_object_key)
+
+                # Create a database record for the uploaded video with the S3 object key
+                video = Video(title='Your Video Title', file_path=s3_object_key)
+                video.save()
+
+                # Call the transcription function with the S3 URI of the uploaded video
+                input_uri = f's3://{bucket_name}/{s3_object_key}'
+                start_transcription.delay(input_uri)
 
                 # Clean up the temporary directory for this video
-                shutil.rmtree(os.path.join(TEMP_CHUNKS_DIR, video_id))
+                shutil.rmtree(video_dir)
 
                 return Response({'message': 'Video uploaded and transcription started.'}, status=status.HTTP_201_CREATED)
             else:
@@ -177,6 +159,7 @@ def upload_video(request):
     else:
         return Response({'message': 'Video upload failed.'}, status=status.HTTP_400_BAD_REQUEST)
 
+
 def concatenate_chunks(temp_dir, complete_video_path):
     # Concatenate all chunks in the temporary directory into the complete video file
     with open(complete_video_path, 'wb') as output_file:
@@ -184,24 +167,3 @@ def concatenate_chunks(temp_dir, complete_video_path):
             chunk_path = os.path.join(temp_dir, chunk_filename)
             with open(chunk_path, 'rb') as chunk_file:
                 output_file.write(chunk_file.read())
-
-def upload_complete_video_to_s3(video_path):
-    try:
-        # Initialize AWS S3 client
-        s3 = boto3.client('s3',
-            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
-            region_name=settings.AWS_S3_REGION_NAME
-        )
-
-        # Define the S3 bucket name
-        bucket_name = settings.AWS_STORAGE_BUCKET_NAME
-
-        # Generate a unique S3 object key (file path)
-        s3_object_key = f'media/{os.path.basename(video_path)}'
-
-        # Upload the complete video to the S3 bucket with the generated key
-        s3.upload_file(video_path, bucket_name, s3_object_key)
-
-    except NoCredentialsError:
-        raise Exception('AWS credentials are missing or incorrect.')
