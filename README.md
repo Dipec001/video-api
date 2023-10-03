@@ -153,7 +153,7 @@ Sammple Response:
     "created_on": "2023-10-01T12:34:56Z",
     "filename": "Video Title",
     "url": "https://your-s3-bucket.s3.amazonaws.com/media/video_12345.mp4",
-    "transcript_url": "/api/videos/transcription/1/"
+    "transcript_url": "/api/get_transcription/1/"
 }
 
 ```
