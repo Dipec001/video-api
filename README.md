@@ -1,45 +1,61 @@
-# Video Upload API Documentation
+# Video API Documentation
+
+Welcome to the Video API documentation. This API allows you to upload screenrecorded videos, view, and transcribe videos. It also provides access to video playback and transcription URLs.
 
 ## Table of Contents
-
-1. [Introduction](#introduction)
-2. [Prerequisites](#prerequisites)
-3. [Getting Started](#getting-started)
-   - [List Videos](#list-videos)
-   - [Upload Video](#upload-video)
-   - [Video Playback](#video-playback)
-   - [Get Transcription](#get-transcription)
-4. [Sample API Usage](#sample-api-usage)
-5. [Known Limitations](#known-limitations)
-
----
-
-## Introduction
-
-The Video Upload API is designed to facilitate video uploading, playback, and transcription retrieval. It uses Django for the backend and AWS S3 for storing videos and transcriptions. This API is useful for applications that require video management and transcription services.
-
----
+- [Prerequisites](#prerequisites)
+- [Getting Started](#getting-started)
+  - [Installation](#installation)
+  - [Configuration](#configuration)
+- [API Endpoints](#api-endpoints)
+  - [List Videos](#list-videos)
+  - [Video Playback](#video-playback)
+  - [Get Transcription](#get-transcription)
+  - [Upload Video](#upload-video)
+- [Sample Requests and Responses](#sample-requests-and-responses)
 
 ## Prerequisites
 
-Before using the API, ensure you have the following prerequisites installed and set up:
+Before using this API, ensure you have the following prerequisites in place:
 
-- Python (3.10)
-- Django (3.x)
-- Django REST framework
-- Boto3 (for AWS S3 integration)
-- AWS IAM credentials (Access Key ID and Secret Access Key)
-- AWS S3 Bucket (for storing videos and transcriptions)
-
----
+- Python 3.x
+- Django (version 3.x)
+- AWS S3 Bucket (for video storage)
+- AWS Access Key ID and Secret Access Key
+- Boto3 (Python SDK for AWS)
+- Django Rest Framework
 
 ## Getting Started
 
-To get started with the Video Upload API, follow these steps:
+### Installation
+
+Clone this repository:
+
+```bash
+   git clone <repository-url>
+   cd videoproject
+---
+
+Install the required dependencies:
+```
+ pip install -r requirements.txt
+Configuration
+Configure your Django settings to use AWS S3 for media storage. Update the following settings in your settings.py:
+```
+   AWS_ACCESS_KEY_ID = 'your-access-key-id'
+   AWS_SECRET_ACCESS_KEY = 'your-secret-access-key'
+   AWS_STORAGE_BUCKET_NAME = 'your-s3-bucket-name'
+   AWS_S3_REGION_NAME = 'your-s3-region-name'
+   MEDIA_URL = 'https://%s.s3.amazonaws.com/' % AWS_STORAGE_BUCKET_NAME
+   DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+```
+
+
+## API ENDPOINTS
 
 ### List Videos
 
-**Endpoint**: `/api/videos/`
+**Endpoint**: `https://video-api-85ac12263247.herokuapp.com/api/videos/`
 
 **HTTP Method**: GET
 
@@ -49,7 +65,7 @@ To get started with the Video Upload API, follow these steps:
 
 ### Upload Video
 
-**Endpoint**: `/api/upload-video/`
+**Endpoint**: `https://video-api-85ac12263247.herokuapp.com/api/upload-video/`
 
 **HTTP Method**: POST
 
@@ -62,21 +78,21 @@ To get started with the Video Upload API, follow these steps:
 
 ### Video Playback
 
-**Endpoint**: `/api/playback/{video_id}/`
+**Endpoint**: `https://video-api-85ac12263247.herokuapp.com/video/play/{video_id}/`
 
 **HTTP Method**: GET
 
-**Description**: Retrieve a pre-signed URL for secure video playback. The URL will expire after a certain time (e.g., 1 hour).
+**Description**: Retrieve the video playback URL for a specific video and other video details.
 
-**Response**: Redirect to the pre-signed URL for video playback.
+**Response**: JSON object with details
 
 ### Get Transcription
 
-**Endpoint**: `/api/transcription/{video_id}/`
+**Endpoint**: `https://video-api-85ac12263247.herokuapp.com/api/get_transcription/{video_id}/`
 
 **HTTP Method**: GET
 
-**Description**: Retrieve a pre-signed URL for the transcription file associated with a video. The URL will expire after a certain time (e.g., 1 hour).
+**Description**: Retrieve a pre-signed URL for the transcription file associated with a video.
 
 **Response**: JSON object with the transcription URL.
 
@@ -89,7 +105,7 @@ To get started with the Video Upload API, follow these steps:
 Retrieve a list of all videos available in the system:
 
 ```http
-GET /api/videos/
+GET https://video-api-85ac12263247.herokuapp.com/api/videos/
 ```
 
 Sample Response:
@@ -113,12 +129,9 @@ Upload Video
 Upload video chunks to the system:
 
 ```http
-POST /api/upload-video/
+POST https://video-api-85ac12263247.herokuapp.com/api/upload_video/
 ```
-Sample Request (Using curl):
-```
-curl -X POST -F "chunk=@/path/to/chunk.mp4" -F "video_id=1" -F "is_last_chunk=true" http://your-api-url/api/upload-chunk/
-```
+
 Sample Response:
 ```
 {
@@ -129,12 +142,39 @@ Sample Response:
 Video Playback
 
 Retrieve a pre-signed URL for secure video playback:
+
 ```http
-GET /api/playback/{video_id}/
+GET https://video-api-85ac12263247.herokuapp.com/video/play/1/
 ```
 Sammple Response:
 ```
-Redirect to pre-signed URL for video playback.
+{
+    "upload_id": 1,
+    "created_on": "2023-10-01T12:34:56Z",
+    "filename": "Video Title",
+    "url": "https://your-s3-bucket.s3.amazonaws.com/media/video_12345.mp4",
+    "transcript_url": "/api/videos/transcription/1/"
+}
+
+```
+Get Transcription
+```Request
+GET https://video-api-85ac12263247.herokuapp.com/api/get_transcription/1/
+
+```
+Response (Transcript Available)
+```
+{
+    "transcription_url": "https://your-s3-bucket.s3.amazonaws.com/transcripts/video_12345.mp4.json"
+}
+
+```
+Response (Transcript Not Available)
+```
+{
+    "message": "No transcript available for this video."
+}
+
 ```
 
 Known Limitations
