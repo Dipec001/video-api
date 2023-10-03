@@ -78,7 +78,7 @@ Configure your Django settings to use AWS S3 for media storage. Update the follo
 
 ### Video Playback
 
-**Endpoint**: `https://video-api-85ac12263247.herokuapp.com/video/play/{video_id}/`
+**Endpoint**: `https://video-api-85ac12263247.herokuapp.com/api/video/play/{video_id}/`
 
 **HTTP Method**: GET
 
@@ -144,7 +144,7 @@ Video Playback
 Retrieve a pre-signed URL for secure video playback:
 
 ```http
-GET https://video-api-85ac12263247.herokuapp.com/video/play/1/
+GET https://video-api-85ac12263247.herokuapp.com/api/video/play/1/
 ```
 Sammple Response:
 ```
@@ -175,6 +175,10 @@ Response (Transcript Not Available)
     "message": "No transcript available for this video."
 }
 
+```
+The Api Link
+```
+https://video-api-85ac12263247.herokuapp.com/
 ```
 
 Known Limitations
