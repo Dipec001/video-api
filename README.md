@@ -55,7 +55,7 @@ Configure your Django settings to use AWS S3 for media storage. Update the follo
 
 ### List Videos
 
-**Endpoint**: `/api/videos/`
+**Endpoint**: `https://video-api-85ac12263247.herokuapp.com/api/videos/`
 
 **HTTP Method**: GET
 
@@ -65,7 +65,7 @@ Configure your Django settings to use AWS S3 for media storage. Update the follo
 
 ### Upload Video
 
-**Endpoint**: `/api/upload-video/`
+**Endpoint**: `https://video-api-85ac12263247.herokuapp.com/api/upload-video/`
 
 **HTTP Method**: POST
 
@@ -78,7 +78,7 @@ Configure your Django settings to use AWS S3 for media storage. Update the follo
 
 ### Video Playback
 
-**Endpoint**: `/video/play/{video_id}/`
+**Endpoint**: `https://video-api-85ac12263247.herokuapp.com/video/play/{video_id}/`
 
 **HTTP Method**: GET
 
@@ -88,7 +88,7 @@ Configure your Django settings to use AWS S3 for media storage. Update the follo
 
 ### Get Transcription
 
-**Endpoint**: `/api/get_transcription/{video_id}/`
+**Endpoint**: `https://video-api-85ac12263247.herokuapp.com/api/get_transcription/{video_id}/`
 
 **HTTP Method**: GET
 
@@ -105,7 +105,7 @@ Configure your Django settings to use AWS S3 for media storage. Update the follo
 Retrieve a list of all videos available in the system:
 
 ```http
-GET /api/videos/
+GET https://video-api-85ac12263247.herokuapp.com/api/videos/
 ```
 
 Sample Response:
@@ -129,7 +129,7 @@ Upload Video
 Upload video chunks to the system:
 
 ```http
-POST /api/upload_video/
+POST https://video-api-85ac12263247.herokuapp.com/api/upload_video/
 ```
 
 Sample Response:
@@ -144,7 +144,7 @@ Video Playback
 Retrieve a pre-signed URL for secure video playback:
 
 ```http
-GET /video/play/1/
+GET https://video-api-85ac12263247.herokuapp.com/video/play/1/
 ```
 Sammple Response:
 ```
@@ -159,7 +159,7 @@ Sammple Response:
 ```
 Get Transcription
 ```Request
-GET /api/get_transcription/1/
+GET https://video-api-85ac12263247.herokuapp.com/api/get_transcription/1/
 
 ```
 Response (Transcript Available)
